@@ -6,3 +6,5 @@ selenium
 chromedriver-autoinstaller
 tqdm
 openpyxl
+os
+subprocess
