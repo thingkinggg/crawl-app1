@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 import time
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import chromedriver_autoinstaller
 from tqdm import tqdm
@@ -11,27 +12,20 @@ from tqdm import tqdm
 import os
 import subprocess
 
-# Streamlit Cloud와 같은 환경에서 Chrome 및 Chromedriver를 설치
-def install_chromedriver():
-    # Chrome 설치
-    if not os.path.isfile('/usr/bin/google-chrome'):
-        subprocess.run(['sudo', 'apt-get', 'update'])
-        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'google-chrome-stable'])
-        
-    # Chromedriver 설치
-    if not os.path.isfile('/usr/bin/chromedriver'):
-        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'chromium-chromedriver'])
+# Chromedriver의 경로 설정 (직접 지정)
+chromedriver_path = '/usr/bin/chromedriver'
 
-install_chromedriver()
-
+# ChromeOptions 설정
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
-chrome_options.add_argument('--remote-debugging-port=9222')
 
-# 크롬 드라이버 경로 설정
-webdriver.Chrome(executable_path='/usr/bin/chromedriver', options=chrome_options)
+# Service 객체를 사용하여 Chromedriver 경로 지정
+service = Service(executable_path=chromedriver_path)
+
+# WebDriver에 Service 및 Options 전달
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Streamlit 설정
 st.title("지자체 크롤링 사이트")
