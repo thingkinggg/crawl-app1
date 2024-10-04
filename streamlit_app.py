@@ -12,19 +12,30 @@ from tqdm import tqdm
 import os
 import subprocess
 
-# Chromedriver의 경로 설정 (직접 지정)
-chromedriver_path = '/usr/bin/chromedriver'
+# Chrome 및 Chromedriver 수동 설치
+def install_chrome_and_chromedriver():
+    if not os.path.isfile('/usr/bin/google-chrome'):
+        # Chrome 설치
+        subprocess.run(['sudo', 'apt-get', 'update'])
+        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'google-chrome-stable'])
 
-# ChromeOptions 설정
+    if not os.path.isfile('/usr/bin/chromedriver'):
+        # Chromedriver 설치
+        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'chromium-chromedriver'])
+
+install_chrome_and_chromedriver()
+
+# Chrome 옵션 설정
 chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')  # 브라우저를 GUI 없이 실행
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--remote-debugging-port=9222')
 
-# Service 객체를 사용하여 Chromedriver 경로 지정
-service = Service(executable_path=chromedriver_path)
+# Chromedriver 경로 설정
+service = Service(executable_path='/usr/bin/chromedriver')
 
-# WebDriver에 Service 및 Options 전달
+# WebDriver 실행
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
 # Streamlit 설정
