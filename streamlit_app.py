@@ -8,6 +8,31 @@ from selenium.webdriver.common.by import By
 import chromedriver_autoinstaller
 from tqdm import tqdm
 
+import os
+import subprocess
+
+# Streamlit Cloud와 같은 환경에서 Chrome 및 Chromedriver를 설치
+def install_chromedriver():
+    # Chrome 설치
+    if not os.path.isfile('/usr/bin/google-chrome'):
+        subprocess.run(['sudo', 'apt-get', 'update'])
+        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'google-chrome-stable'])
+        
+    # Chromedriver 설치
+    if not os.path.isfile('/usr/bin/chromedriver'):
+        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'chromium-chromedriver'])
+
+install_chromedriver()
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--remote-debugging-port=9222')
+
+# 크롬 드라이버 경로 설정
+webdriver.Chrome(executable_path='/usr/bin/chromedriver', options=chrome_options)
+
 # Streamlit 설정
 st.title("지자체 크롤링 사이트")
 
