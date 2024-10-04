@@ -1,1 +1,8 @@
 streamlit
+pandas
+beautifulsoup4
+requests
+selenium
+chromedriver-autoinstaller
+tqdm
+openpyxl
