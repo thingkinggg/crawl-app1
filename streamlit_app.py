@@ -38,9 +38,9 @@ def main_app():
     unsafe_allow_html=True
 )
     
-    # 오늘 일자 및 최근 7일 계산
+    # 오늘 일자 및 최근 15일 계산
     today = datetime.today()
-    one_week_ago = today - timedelta(days=8)
+    one_week_ago = today - timedelta(days=16)
     today_str = today.strftime('%Y%m%d')
     
    # 특정 접두사를 가지는 최근 파일들을 반환하는 함수
@@ -137,7 +137,7 @@ def main_app():
         else:
             st.write(f"선택한 날짜({selected_date})에 해당하는 df_log 파일을 찾을 수 없습니다.")
     else:
-        st.write("최근 일주일 내에 df_log 파일을 찾을 수 없습니다.")
+        st.write("최근 15일 내에 df_log 파일을 찾을 수 없습니다.")
     
     # df_list 파일 읽기 및 처리
     df_list_file_paths = get_recent_files('df_list')
@@ -195,7 +195,7 @@ def main_app():
             </style>
         """, unsafe_allow_html=True)
     
-        st.write(f"최근 일주일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
+        st.write(f"최근 15일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
         st.write("포함 키워드 : 특허, 제안, 심의")
     
         search_keyword = st.text_input("수집된 공고 제목에서 검색할 키워드를 입력하세요")
@@ -209,7 +209,7 @@ def main_app():
             st.markdown(combined_df_list.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
 
     else:
-        st.write("최근 일주일 내에 df_list 파일을 찾을 수 없습니다.")
+        st.write("최근 15일 내에 df_list 파일을 찾을 수 없습니다.")
     
 
 
