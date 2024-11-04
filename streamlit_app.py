@@ -4,6 +4,7 @@ import glob
 import os
 import webbrowser
 from datetime import datetime, timedelta
+from io import BytesIO
 
 st.set_page_config(layout="wide")
 
