@@ -212,7 +212,7 @@ def main_app():
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             combined_df_list.to_excel(writer, index=False, sheet_name='df_list_data')
-            writer.save()
+            writer.close()  # save() 대신 close()를 사용합니다.
             processed_data = output.getvalue()
         
         st.download_button(
