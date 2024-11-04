@@ -196,7 +196,7 @@ def main_app():
         """, unsafe_allow_html=True)
     
         st.write(f"최근 15일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
-        st.write("포함 키워드 : 특허, 제안, 심의")
+        st.write("포함 키워드 : 특허, 제안, 심의, 공법")
     
         search_keyword = st.text_input("수집된 공고 제목에서 검색할 키워드를 입력하세요")
     
