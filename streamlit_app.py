@@ -198,12 +198,20 @@ def main_app():
     
         st.write(f"최근 15일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
         st.write("포함 키워드 : 특허, 제안, 심의, 공법")
+
+        # 엑셀 파일 다운로드 버튼 추가
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            combined_df_list.to_excel(writer, index=False, sheet_name='df_list_data')
+            writer.close()  # save() 대신 close()를 사용합니다.
+            processed_data = output.getvalue()
         st.download_button(
             label="📥 공고 파일 엑셀 다운로드",
             data=processed_data,
             file_name=f"recent_df_list_{today_str}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )    
+        )
+        
         search_keyword = st.text_input("수집된 공고 제목에서 검색할 키워드를 입력하세요")
     
         if search_keyword:
@@ -213,13 +221,7 @@ def main_app():
         else:
             st.write("df_list 파일의 전체 데이터:")
             st.markdown(combined_df_list.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
-         # 엑셀 파일 다운로드 버튼 추가
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            combined_df_list.to_excel(writer, index=False, sheet_name='df_list_data')
-            writer.close()  # save() 대신 close()를 사용합니다.
-            processed_data = output.getvalue()
-        
+       
 
     else:
         st.write("최근 15일 내에 df_list 파일을 찾을 수 없습니다.")
