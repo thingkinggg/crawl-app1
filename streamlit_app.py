@@ -207,7 +207,19 @@ def main_app():
         else:
             st.write("df_list 파일의 전체 데이터:")
             st.markdown(combined_df_list.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
-
+         # 엑셀 파일 다운로드 버튼 추가
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            combined_df_list.to_excel(writer, index=False, sheet_name='df_list_data')
+            writer.save()
+            processed_data = output.getvalue()
+        
+        st.download_button(
+            label="📥 공고 파일 엑셀 다운로드",
+            data=processed_data,
+            file_name=f"recent_df_list_{today_str}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
     else:
         st.write("최근 15일 내에 df_list 파일을 찾을 수 없습니다.")
     
