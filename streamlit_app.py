@@ -98,41 +98,9 @@ def main_app():
             if not problematic_rows.empty:
                 st.warning(f"선택한 날짜({selected_date})에 덜 수집된 사이트 리스트는 아래와 같습니다. 직접 접속 후 확인 필요합니다.")
                 st.write("확인해야 할 사이트:")
-                # URL 컬럼에 하이퍼링크 추가
-                problematic_rows['URL'] = problematic_rows['URL'].apply(lambda x: f'<a href="{x}" target="_blank">{x}</a>')
-                # CSS 스타일을 사용하여 특정 열의 너비를 조정합니다.
-                st.markdown("""
-                    <style>
-                        table {
-                            width: 100%;
-                        }
-                        th, td {
-                            padding: 5px;
-                        }
-                        th {
-                            text-align: left;
-                        }
-                        td {
-                            max-width: 200px;  /* 기본적으로 열의 최대 폭 설정 */
-                            overflow-wrap: break-word;
-                        }
-                        td:nth-child(1), th:nth-child(1) {  /* unique_date 열 (두 번째 열) */
-                            width: 10px;  /* 열의 너비 설정 */
-                        }
-                        td:nth-child(2), th:nth-child(2) {  /* unique_date 열 (두 번째 열) */
-                            width: 20px;  /* 열의 너비 설정 */
-                        }
-                        td:nth-child(4), th:nth-child(4) {  /* unique_date 열 (두 번째 열) */
-                            width: 20px;  /* 열의 너비 설정 */
-                        }
-                        td:nth-child(5), th:nth-child(5) {  /* max_date 열 (세 번째 열) */
-                            width: 20px;  /* 열의 너비 설정 */
-                        }
-                    </style>
-                """, unsafe_allow_html=True)
-                
-                # 데이터프레임을 HTML로 렌더링
-                st.markdown(problematic_rows.to_html(escape=False), unsafe_allow_html=True)
+                for index, row in problematic_rows.iterrows():
+                    url = row['URL']
+                    st.markdown(f'<a href="{url}" target="_blank"><button>확인하기</button></a>', unsafe_allow_html=True)
             else:
                 st.success(f"선택한 날짜({selected_date})에는 unique_date가 Null이거나 1인 데이터가 없습니다.")
         else:
