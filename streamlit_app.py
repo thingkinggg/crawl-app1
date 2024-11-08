@@ -194,8 +194,15 @@ def main_app():
             st.markdown(search_results.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
         else:
             st.write("df_list 파일의 전체 데이터:")
-            st.markdown(combined_df_list.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
-       
+            # Replace the "URL" column with "확인하기" buttons
+            combined_df_list = combined_df_list.copy()
+            combined_df_list['URL'] = combined_df_list['URL'].apply(
+                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
+            )
+            
+            # Render the DataFrame as HTML
+            st.markdown(combined_df_list.to_html(escape=False, index=False), unsafe_allow_html=True)
+      
 
     else:
         st.write("최근 15일 내에 df_list 파일을 찾을 수 없습니다.")
