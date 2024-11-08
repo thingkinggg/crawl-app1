@@ -134,33 +134,31 @@ def main_app():
         # "df_list 파일" 테이블에 대한 CSS 스타일을 정의합니다.
         st.markdown("""
             <style>
-                #df-list-table {
+                table {
                     width: 100%;
+                    border-collapse: collapse;
                 }
-                #df-list-table th {
-                    text-align: center;
+                th {
+                    text-align: center;  /* Center-align the headers */
+                    background-color: #f2f2f2;  /* Light gray background for headers */
+                    padding: 8px;
                 }
-                #df-list-table td {
-                    max-width: 50px;  /* 열의 최대 폭 설정 */
-                    width: 50px;  /* 열의 너비 설정 */
-                    overflow-wrap: break-word;
-                    word-wrap: break-word;  /* 단어를 잘라서 줄바꿈 */
+                td {
+                    padding: 8px;
+                    text-align: left;  /* Align text to the left in table cells */
+                    max-width: 200px;  /* Adjust max-width to better fit content */
+                    word-wrap: break-word;  /* Enable word wrap for long text */
                 }
-                #df-list-table td:nth-child(1), #df-list-table th:nth-child(1) {  /* 첫 번째 열 */
-                    width: 5px;  /* 첫 번째 열의 너비 설정 */
-                    max-width: 5px;  /* 첫 번째 열의 최대 너비 설정 */
-                    overflow: hidden;  /* 내용이 넘칠 경우 숨김 */
+                a {
+                    color: #0066cc;  /* Link color */
+                    text-decoration: none;  /* Remove underline from links */
                 }
-                #df-list-table td:nth-child(2), #df-list-table th:nth-child(2) {  /* 두 번째 열 */
-                    width: 10px;  /* 두 번째 열의 너비 설정 */
+                a:hover {
+                    text-decoration: underline;  /* Underline on hover */
                 }
-                #df-list-table td:nth-child(3), #df-list-table th:nth-child(3) {  /* 두 번째 열 */
-                    width: 20px;  /* 두 번째 열의 너비 설정 */
-                }
-                #df-list-table td:nth-child(5), #df-list-table th:nth-child(5) {  /* 두 번째 열 */
-                    width: 10px;  /* 두 번째 열의 너비 설정 */
-                    max-width: 10px;  /* 첫 번째 열의 최대 너비 설정 */
-                    overflow: hidden;  /* 내용이 넘칠 경우 숨김 */
+                button {
+                    font-size: 12px;
+                    padding: 5px 10px;
                 }
             </style>
         """, unsafe_allow_html=True)
@@ -189,7 +187,7 @@ def main_app():
             st.write(f"'{search_keyword}' 검색 결과:")
             search_results = search_results.copy()
             search_results['URL'] = search_results['URL'].apply(
-                lambda x: f'<a href="{x}" target="_blank">확인하기</a>'
+                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
             )
             st.markdown(search_results.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
         else:
@@ -197,7 +195,7 @@ def main_app():
             # Replace the "URL" column with "확인하기" buttons
             combined_df_list = combined_df_list.copy()
             combined_df_list['URL'] = combined_df_list['URL'].apply(
-                lambda x: f'<a href="{x}" target="_blank"><button style="font-size: 12px; padding: 5px 10px;">확인하기</button></a>'
+                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
             )
             
             # Render the DataFrame as HTML
