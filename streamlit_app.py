@@ -197,7 +197,7 @@ def main_app():
             # Replace the "URL" column with "확인하기" buttons
             combined_df_list = combined_df_list.copy()
             combined_df_list['URL'] = combined_df_list['URL'].apply(
-                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
+                lambda x: f'<a href="{x}" target="_blank">확인하기</a>'
             )
             
             # Render the DataFrame as HTML
