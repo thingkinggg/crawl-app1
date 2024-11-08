@@ -131,7 +131,7 @@ def main_app():
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list = combined_df_list.sort_values(by='작성일', ascending=False)
 
-        # "df_list 파일" 테이블에 대한 CSS 스타일을 정의합니다.
+                # General CSS styling for the top table
         st.markdown("""
             <style>
                 table {
@@ -159,6 +159,12 @@ def main_app():
                 button {
                     font-size: 12px;
                     padding: 5px 10px;
+                }
+                .lower-table td:nth-child(2) {
+                    max-width: 50px;  /* Reduce the width of the 2nd column */
+                }
+                .lower-table td:nth-child(3) {
+                    max-width: 300px;  /* Increase the width of the 3rd column */
                 }
             </style>
         """, unsafe_allow_html=True)
@@ -189,7 +195,7 @@ def main_app():
             search_results['URL'] = search_results['URL'].apply(
                 lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
             )
-            st.markdown(search_results.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
+            st.markdown(f'<div class="lower-table">{search_results.to_html(escape=False, index=False)}</div>', unsafe_allow_html=True)
         else:
             st.write("df_list 파일의 전체 데이터:")
             # Replace the "URL" column with "확인하기" buttons
@@ -199,7 +205,7 @@ def main_app():
             )
             
             # Render the DataFrame as HTML
-            st.markdown(combined_df_list.to_html(escape=False, index=False), unsafe_allow_html=True)
+            st.markdown(f'<div class="lower-table">{combined_df_list.to_html(escape=False, index=False)}</div>', unsafe_allow_html=True)
       
 
     else:
