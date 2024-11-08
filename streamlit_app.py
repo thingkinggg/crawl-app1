@@ -137,9 +137,6 @@ def main_app():
                 #df-list-table {
                     width: 100%;
                 }
-                #df-list-table th, #df-list-table td {
-                    padding: 5px;
-                }
                 #df-list-table th {
                     text-align: center;
                 }
@@ -190,6 +187,10 @@ def main_app():
         if search_keyword:
             search_results = combined_df_list[combined_df_list['제목'].str.contains(search_keyword, na=False)]
             st.write(f"'{search_keyword}' 검색 결과:")
+            search_results = search_results.copy()
+            search_results['URL'] = search_results['URL'].apply(
+                lambda x: f'<a href="{x}" target="_blank">확인하기</a>'
+            )
             st.markdown(search_results.to_html(escape=False, index=False, table_id="df-list-table"), unsafe_allow_html=True)
         else:
             st.write("df_list 파일의 전체 데이터:")
