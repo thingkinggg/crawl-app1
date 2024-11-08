@@ -160,11 +160,20 @@ def main_app():
                     font-size: 12px;
                     padding: 5px 10px;
                 }
-                .lower-table td:nth-child(2) {
+                .lower-table td:nth-child(1) {
                     max-width: 50px;  /* Reduce the width of the 2nd column */
+                }                
+                .lower-table td:nth-child(2) {
+                    max-width: 100px;  /* Reduce the width of the 2nd column */
                 }
                 .lower-table td:nth-child(3) {
                     max-width: 300px;  /* Increase the width of the 3rd column */
+                }
+                .lower-table td:nth-child(4) {
+                    max-width: 50px;  /* Increase the width of the 3rd column */
+                }
+                .lower-table td:nth-child(5) {
+                    max-width: 50px;  /* Increase the width of the 3rd column */
                 }
             </style>
         """, unsafe_allow_html=True)
