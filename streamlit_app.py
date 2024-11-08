@@ -133,42 +133,7 @@ def main_app():
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list = combined_df_list.sort_values(by='작성일', ascending=False)
     
-        # "df_list 파일" 테이블에 대한 CSS 스타일을 정의합니다.
-        st.markdown("""
-            <style>
-                #df-list-table {
-                    width: 100%;
-                }
-                #df-list-table th, #df-list-table td {
-                    padding: 5px;
-                }
-                #df-list-table th {
-                    text-align: left;
-                }
-                #df-list-table td {
-                    max-width: 50px;  /* 열의 최대 폭 설정 */
-                    width: 50px;  /* 열의 너비 설정 */
-                    overflow-wrap: break-word;
-                    word-wrap: break-word;  /* 단어를 잘라서 줄바꿈 */
-                }
-                #df-list-table td:nth-child(1), #df-list-table th:nth-child(1) {  /* 첫 번째 열 */
-                    width: 5px;  /* 첫 번째 열의 너비 설정 */
-                    max-width: 5px;  /* 첫 번째 열의 최대 너비 설정 */
-                    overflow: hidden;  /* 내용이 넘칠 경우 숨김 */
-                }
-                #df-list-table td:nth-child(2), #df-list-table th:nth-child(2) {  /* 두 번째 열 */
-                    width: 10px;  /* 두 번째 열의 너비 설정 */
-                }
-                #df-list-table td:nth-child(3), #df-list-table th:nth-child(3) {  /* 두 번째 열 */
-                    width: 20px;  /* 두 번째 열의 너비 설정 */
-                }
-                #df-list-table td:nth-child(5), #df-list-table th:nth-child(5) {  /* 두 번째 열 */
-                    width: 10px;  /* 두 번째 열의 너비 설정 */
-                    max-width: 10px;  /* 첫 번째 열의 최대 너비 설정 */
-                    overflow: hidden;  /* 내용이 넘칠 경우 숨김 */
-                }
-            </style>
-        """, unsafe_allow_html=True)
+
     
         st.write(f"최근 15일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
         st.write("포함 키워드 : 특허, 제안, 심의, 공법")
@@ -197,7 +162,7 @@ def main_app():
             # Replace the "URL" column with "확인하기" buttons
             combined_df_list = combined_df_list.copy()
             combined_df_list['URL'] = combined_df_list['URL'].apply(
-                lambda x: f'<a href="{x}" target="_blank">확인하기</a>'
+                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
             )
             
             # Render the DataFrame as HTML
