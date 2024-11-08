@@ -97,13 +97,16 @@ def main_app():
             
             if not problematic_rows.empty:
                 st.warning(f"선택한 날짜({selected_date})에 덜 수집된 사이트 리스트는 아래와 같습니다. 직접 접속 후 확인 필요합니다.")
-                st.write("확인해야 할 사이트:")
-                # Display all columns except URL and add a "확인하기" button for each URL
-                for index, row in problematic_rows.iterrows():
-                    st.write(row.drop("URL").to_dict())  # Display all other columns
-                    url = row['URL']
-                    st.markdown(f'<a href="{url}" target="_blank"><button>확인하기</button></a>', unsafe_allow_html=True)
-           
+                
+                # Replace the "URL" column with "확인하기" buttons
+                problematic_rows = problematic_rows.copy()
+                problematic_rows['URL'] = problematic_rows['URL'].apply(
+                    lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>'
+                )
+                
+                # Render the DataFrame as HTML
+                st.markdown(problematic_rows.to_html(escape=False, index=False), unsafe_allow_html=True)
+            
             else:
                 st.success(f"선택한 날짜({selected_date})에는 unique_date가 Null이거나 1인 데이터가 없습니다.")
         else:
