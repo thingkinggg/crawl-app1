@@ -128,13 +128,10 @@ def main_app():
         column_order = ['SITE_NO', '출처', '제목', 'URL', '작성일']
         combined_df_list = combined_df_list.reindex(columns=column_order)
     
-        combined_df_list['URL'] = combined_df_list['URL'].apply(lambda x: f'<a href="{x}" target="_blank">{x}</a>')
-    
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list = combined_df_list.sort_values(by='작성일', ascending=False)
     
 
-    
         st.write(f"최근 15일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
         st.write("포함 키워드 : 특허, 제안, 심의, 공법")
 
