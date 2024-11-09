@@ -89,6 +89,10 @@ def main_app():
             for file_path in df_log_files:
                 df = pd.read_excel(file_path, engine='openpyxl')
                 combined_df_log = pd.concat([combined_df_log, df], ignore_index=True)
+
+            # max_date를 YYYY-MM-DD 형식으로 변경
+            if 'max_date' in combined_df_log.columns:
+                combined_df_log['max_date'] = pd.to_datetime(combined_df_log['max_date'], errors='coerce').dt.strftime('%Y-%m-%d')
             
             # Check problematic rows
             problematic_rows = combined_df_log[
