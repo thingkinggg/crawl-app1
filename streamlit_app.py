@@ -106,7 +106,7 @@ def main_app():
                 # Replace the "URL" column with "확인하기" buttons
                 problematic_rows = problematic_rows.copy()
                 problematic_rows['URL'] = problematic_rows['URL'].apply(
-                    lambda x: f'<a href="{quote(x, safe=":/?&=,%")}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
+                    lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
                     )
                 
                 # Render the DataFrame as HTML
@@ -207,7 +207,7 @@ def main_app():
             st.write(f"'{search_keyword}' 검색 결과:")
             search_results = search_results.copy()
             search_results['URL'] = search_results['URL'].apply(
-                lambda x: f'<a href="{quote(x, safe=":/?&=,%")}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
+                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
             )
             st.markdown(f'<div class="lower-table">{search_results.to_html(escape=False, index=False)}</div>', unsafe_allow_html=True)
         else:
@@ -215,7 +215,7 @@ def main_app():
             # Replace the "URL" column with "확인하기" buttons
             combined_df_list = combined_df_list.copy()
             combined_df_list['URL'] = combined_df_list['URL'].apply(
-                lambda x: f'<a href="{quote(x, safe=":/?&=,%")}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
+                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
             )
             
             # Render the DataFrame as HTML
