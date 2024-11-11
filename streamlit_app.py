@@ -23,6 +23,10 @@ def login():
         else:
             st.error("비밀번호가 올바르지 않습니다.")
 
+# 버튼을 클릭하여 URL을 열 수 있도록 함수를 정의합니다.
+def create_link_button(url):
+    return f'<a target="_blank" href="{url}"><button>확인하기</button></a>'
+
 def main_app():
     st.title("🎈 지자체 크롤링")
     st.write("2024년 11월 04일 21:28 업데이트")
@@ -39,10 +43,6 @@ def main_app():
     """,
     unsafe_allow_html=True
 )
-    
-# 버튼을 클릭하여 URL을 열 수 있도록 함수를 정의합니다.
-def create_link_button(url):
-    return f'<a target="_blank" href="{url}"><button>확인하기</button></a>'
     
     # 오늘 일자 및 최근 15일 계산
     today = datetime.today()
