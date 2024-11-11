@@ -40,6 +40,10 @@ def main_app():
     unsafe_allow_html=True
 )
     
+# 버튼을 클릭하여 URL을 열 수 있도록 함수를 정의합니다.
+def create_link_button(url):
+    return f'<a target="_blank" href="{url}"><button>확인하기</button></a>'
+    
     # 오늘 일자 및 최근 15일 계산
     today = datetime.today()
     one_week_ago = today - timedelta(days=16)
@@ -106,7 +110,7 @@ def main_app():
                 # Replace the "URL" column with "확인하기" buttons
                 problematic_rows = problematic_rows.copy()
                 problematic_rows['URL'] = problematic_rows['URL'].apply(
-                    lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
+                    lambda x: create_link_button(x) if pd.notna(x) else ''
                     )
                 
                 # Render the DataFrame as HTML
@@ -207,7 +211,7 @@ def main_app():
             st.write(f"'{search_keyword}' 검색 결과:")
             search_results = search_results.copy()
             search_results['URL'] = search_results['URL'].apply(
-                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
+                lambda x: create_link_button(x) if pd.notna(x) else ''
             )
             st.markdown(f'<div class="lower-table">{search_results.to_html(escape=False, index=False)}</div>', unsafe_allow_html=True)
         else:
@@ -215,7 +219,7 @@ def main_app():
             # Replace the "URL" column with "확인하기" buttons
             combined_df_list = combined_df_list.copy()
             combined_df_list['URL'] = combined_df_list['URL'].apply(
-                lambda x: f'<a href="{x}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
+                lambda x: create_link_button(x) if pd.notna(x) else ''
             )
             
             # Render the DataFrame as HTML
