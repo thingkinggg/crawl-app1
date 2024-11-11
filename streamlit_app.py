@@ -5,6 +5,7 @@ import os
 import webbrowser
 from datetime import datetime, timedelta
 from io import BytesIO
+from urllib.parse import quote
 
 st.set_page_config(layout="wide")
 
