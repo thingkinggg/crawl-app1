@@ -110,9 +110,9 @@ def main_app():
                 # Replace the "URL" column with "확인하기" buttons
                 problematic_rows = problematic_rows.copy()
                 problematic_rows['URL'] = problematic_rows['URL'].apply(
-                    lambda x: create_link_button(x) if pd.notna(x) else ''
+                    lambda x: f'<a href="{html.escape(x)}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
                     )
-                st.write("불러온 데이터프레임 샘플:", combined_df_log)
+  
                 # Render the DataFrame as HTML
                 st.markdown(problematic_rows.to_html(escape=False, index=False), unsafe_allow_html=True)
             
