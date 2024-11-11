@@ -112,7 +112,7 @@ def main_app():
                 problematic_rows['URL'] = problematic_rows['URL'].apply(
                     lambda x: create_link_button(x) if pd.notna(x) else ''
                     )
-                st.write("불러온 데이터프레임 샘플:", combined_df_log.head())
+                st.write("불러온 데이터프레임 샘플:", combined_df_log)
                 # Render the DataFrame as HTML
                 st.markdown(problematic_rows.to_html(escape=False, index=False), unsafe_allow_html=True)
             
