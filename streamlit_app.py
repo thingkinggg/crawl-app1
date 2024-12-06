@@ -131,7 +131,8 @@ def main_app():
         for file_path in df_list_file_paths:
             df = pd.read_excel(file_path, engine='openpyxl')
             combined_df_list = pd.concat([combined_df_list, df], ignore_index=True)
-        
+
+        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
   
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
