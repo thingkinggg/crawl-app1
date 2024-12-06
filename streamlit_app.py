@@ -132,13 +132,23 @@ def main_app():
             df = pd.read_excel(file_path, engine='openpyxl')
             combined_df_list = pd.concat([combined_df_list, df], ignore_index=True)
         
-        combined_df_list = combined_df_list.drop_duplicates()
-    
-        column_order = ['SITE_NO', '출처', '제목', 'URL', '작성일']
-        combined_df_list = combined_df_list.reindex(columns=column_order)
-    
+  
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
-        combined_df_list = combined_df_list.sort_values(by='작성일', ascending=False)
+        combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
+
+        # 중복 제거: '수집일'이 가장 작은 값 가진 행만 남김
+        combined_df_list = combined_df_list.sort_values(by='수집일', ascending=True)  # '수집일' 오름차순 정렬
+        combined_df_list = combined_df_list.drop_duplicates(subset=['SITE_NO', '출처', '제목', 'URL', '작성일'], keep='first')
+        
+        # 데이터 정렬: '수집일' 내림차순, '작성일' 내림차순, 'SITE_NO' 오름차순, '제목' 오름차순
+        combined_df_list = combined_df_list.sort_values(
+            by=['수집일', '작성일', 'SITE_NO', '제목'],
+            ascending=[False, False, True, True]
+        )
+
+        # 컬럼 순서 재정렬
+        column_order = ['SITE_NO', '출처', '제목', 'URL', '작성일', '수집일']
+        combined_df_list = combined_df_list.reindex(columns=column_order)
 
                 # General CSS styling for the top table
         st.markdown("""
