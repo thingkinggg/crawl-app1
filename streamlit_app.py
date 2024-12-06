@@ -132,14 +132,14 @@ def main_app():
             df = pd.read_excel(file_path, engine='openpyxl')
             combined_df_list = pd.concat([combined_df_list, df], ignore_index=True)
 
-        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
+#        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
   
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
 
         # 중복 제거: 동일한 ('SITE_NO', '출처', '제목', 'URL', '작성일') 조합에서 '수집일'이 가장 작은 행만 남김
         combined_df_list = combined_df_list.loc[
-            combined_df_list.groupby(['SITE_NO', '출처', '제목', 'URL', '작성일'])['수집일'].idxmin()
+            combined_df_list.groupby(['SITE_NO', '출처', '제목', '작성일'])['수집일'].idxmin()
             ]
         
         # 데이터 정렬: '수집일' 내림차순, '작성일' 내림차순, 'SITE_NO' 오름차순, '제목' 오름차순
