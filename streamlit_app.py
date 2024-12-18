@@ -129,8 +129,12 @@ def main_app():
         combined_df_list = pd.DataFrame()
         
         for file_path in df_list_file_paths:
-            df = pd.read_excel(file_path, engine='openpyxl')
-            combined_df_list = pd.concat([combined_df_list, df], ignore_index=True)
+            try:
+                df = pd.read_excel(file_path, engine='openpyxl')
+                st.write(f"{file_path}에서 데이터 로드 성공")
+                combined_df_list = pd.concat([combined_df_list, df], ignore_index=True)
+            except Exception as e:
+                st.error(f"{file_path}에서 데이터를 읽는 중 오류 발생: {e}")
 
 #        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
   
