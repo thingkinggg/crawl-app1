@@ -140,7 +140,12 @@ def main_app():
             st.error("모든 파일에서 데이터를 불러오지 못했습니다. 파일 내용을 확인하세요.")
             return
         
-#        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
+        # 필요한 열 확인
+        required_columns = ['SITE_NO', '출처', '제목', '작성일', '수집일']
+        missing_columns = [col for col in required_columns if col not in combined_df_list.columns]
+        if missing_columns:
+            st.error(f"데이터에 누락된 열이 있습니다: {missing_columns}")
+            return
   
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
