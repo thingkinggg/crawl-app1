@@ -146,6 +146,9 @@ def main_app():
         if missing_columns:
             st.error(f"데이터에 누락된 열이 있습니다: {missing_columns}")
             return
+
+        # 데이터 처리
+        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
   
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
         combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
