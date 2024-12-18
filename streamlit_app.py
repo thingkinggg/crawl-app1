@@ -136,6 +136,10 @@ def main_app():
             except Exception as e:
                 st.error(f"{file_path}에서 데이터를 읽는 중 오류 발생: {e}")
 
+        if combined_df_list.empty:
+            st.error("모든 파일에서 데이터를 불러오지 못했습니다. 파일 내용을 확인하세요.")
+            return
+        
 #        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
   
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
