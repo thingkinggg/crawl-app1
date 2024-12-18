@@ -151,7 +151,9 @@ def main_app():
         combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
   
         combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
+        # '수집일' 컬럼 포맷 변경
         combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
+        combined_df_list['수집일'] = combined_df_list['수집일'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
         # 중복 제거: 동일한 ('SITE_NO', '출처', '제목', 'URL', '작성일') 조합에서 '수집일'이 가장 작은 행만 남김
         combined_df_list = combined_df_list.loc[
