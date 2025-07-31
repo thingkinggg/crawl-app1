@@ -124,14 +124,14 @@ class ModelMatchAgentAzure:
             return similar_models, None
 
         models_list = "\n".join([
-            f"- {row.ORIG_MODEL} ({row.BRAND_AD_HOC}, {row.MAIN_TYPE}, {row['44_Capacity']}L, {row['38_Energy']})"
+            f"- ({row.BRAND_AD_HOC}, {row.MAIN_TYPE}, {row['44_Capacity']}L, {row['38_Energy']})"
             for _, row in similar_models.iterrows()
         ])
 
         prompt = PromptTemplate.from_template(
             "기준 모델: {model}\n"
             "유사한 모델:\n{models_list}\n\n"
-            "왜 이 모델들이 비슷한지 주요 스펙 기준으로 요약해줘. (3줄 이내)"
+            "기준 모델과 경쟁사 브랜드의 유사한 모델들이 왜 비슷한지 주요 스펙 기준으로 요약해줘. (3줄 이내)"
         )
 
         chain = LLMChain(llm=self.llm, prompt=prompt)
