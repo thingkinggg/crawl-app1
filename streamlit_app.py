@@ -1,271 +1,76 @@
 import streamlit as st
 import pandas as pd
-import glob
+from model_match_agent import ModelMatchAgentAzure  # 별도 모듈로 분리된 클래스
 import os
-import webbrowser
-from datetime import datetime, timedelta
-from io import BytesIO
-import html
 
-st.set_page_config(layout="wide")
+# ------------------------
+# Streamlit UI Layout
+# ------------------------
+st.set_page_config(page_title="Model Match AI Agent", layout="wide")
+st.title("🔍 경쟁 모델 추천 에이전트")
+st.markdown("고객이 업로드한 매출 데이터 기반으로 유사한 **경쟁 브랜드 모델**을 추천하고, AI가 추천 이유를 요약해줍니다.")
 
-PASSWORD = "ycenc1308"
+# ------------------------
+# Sidebar Inputs
+# ------------------------
+st.sidebar.header("🧾 설정")
+openai_key = st.sidebar.text_input("Azure OpenAI Key", type="password")
+endpoint = st.sidebar.text_input("Azure OpenAI Endpoint", value="https://<your-resource>.openai.azure.com/")
+deployment_name = st.sidebar.text_input("Deployment Name", value="gpt-4o")
 
-def login():
-    st.title("🎈 지자체 크롤링 로그인")
-    password = st.text_input("비밀번호를 입력하세요", type="password")
-    if st.button("로그인"):
-        if password == PASSWORD:
-            st.session_state.logged_in = True
-            st.success("로그인 성공!")
-            # 화면을 새로고침하여 메인 화면으로 전환
-            st.rerun()            
-        else:
-            st.error("비밀번호가 올바르지 않습니다.")
+# ------------------------
+# File Upload
+# ------------------------
+st.subheader("1. 매출 데이터 업로드")
+uploaded_file = st.file_uploader("엑셀 파일(.xlsx) 업로드", type=["xlsx"])
 
-# 버튼을 클릭하여 URL을 열 수 있도록 함수를 정의합니다.
-def create_link_button(url):
-    return f'<a target="_blank" href="{url}"><button>확인하기</button></a>'
+if uploaded_file and openai_key:
+    try:
+        df_raw = pd.read_excel(uploaded_file)
 
-def main_app():
-    st.title("🎈 지자체 크롤링")
-    st.write("2024년 11월 04일 21:28 업데이트")
-    st.write("문의 있으실 경우 deepbid2024@gmail.com 으로 연락부탁드립니다.")
-    # 버튼 클릭 시 Google 스프레드시트로 이동
-    st.markdown(
-    """
-    <a href="https://docs.google.com/spreadsheets/d/1t7rp43AJtoGFSpPwUPAkNBduUqwbl6zddsVv_TJPGdM/edit?usp=sharing" 
-    target="_blank" style="text-decoration: none;">
-        <button style="display: inline-block; padding: 10px 20px; font-size: 16px; color: white; background-color: #4CAF50; border: none; border-radius: 5px; cursor: pointer;">
-            진행현황 확인하기 🚀
-        </button>
-    </a>
-    """,
-    unsafe_allow_html=True
-)
-    
-    # 오늘 일자 및 최근 15일 계산
-    today = datetime.today()
-    one_week_ago = today - timedelta(days=16)
-    today_str = today.strftime('%Y%m%d')
-    
-   # 특정 접두사를 가지는 최근 파일들을 반환하는 함수
-    def get_recent_files_by_date(file_prefix):
-        files = glob.glob(f"{file_prefix}_*.xlsx")
-        file_dates = []
-        for file in files:
-            file_date_str = file.split('_')[-1].replace('.xlsx', '')
-            try:
-                file_date = datetime.strptime(file_date_str, '%Y%m%d')
-                if one_week_ago <= file_date <= today:
-                    file_dates.append(file_date_str)
-            except ValueError:
-                continue
-        return sorted(set(file_dates), reverse=True)
-    
-    # 최근 일주일 내의 파일을 읽어오기 위한 함수
-    def get_recent_files(file_prefix):
-        files = glob.glob(f"{file_prefix}_*.xlsx")
-        recent_files = []
-        for file in files:
-            file_date_str = file.split('_')[-1].replace('.xlsx', '')
-            try:
-                file_date = datetime.strptime(file_date_str, '%Y%m%d')
-                if one_week_ago <= file_date <= today:
-                    recent_files.append(file)
-            except ValueError:
-                continue
-        return sorted(recent_files, reverse=True)
-    
-    # df_log 파일에서 최근 날짜 목록을 가져오기
-    available_dates = get_recent_files_by_date('df_log')
-    
-    if available_dates:
-        # 사용자가 선택한 날짜에 따른 파일 목록 표시
-        selected_date = st.selectbox("날짜를 선택하세요", available_dates)
-        
-        # 선택된 날짜에 해당하는 df_log 파일 읽기
-        df_log_files = glob.glob(f"df_log_{selected_date}.xlsx")
-        
-        if df_log_files:
-            st.write(f"선택한 날짜: {selected_date}")
-            
-            combined_df_log = pd.DataFrame()
-            for file_path in df_log_files:
-                df = pd.read_excel(file_path, engine='openpyxl')
-                combined_df_log = pd.concat([combined_df_log, df], ignore_index=True)
+        # 모델 초기화
+        agent = ModelMatchAgentAzure(
+            df_raw=df_raw,
+            openai_api_key=openai_key,
+            endpoint=endpoint,
+            deployment_name=deployment_name
+        )
 
-            # max_date를 YYYY-MM-DD 형식으로 변경
-            if 'max_date' in combined_df_log.columns:    
-                combined_df_log['max_date'] = pd.to_datetime(combined_df_log['max_date'], errors='coerce').dt.date.astype(str)
-            
-            # Check problematic rows
-            problematic_rows = combined_df_log[
-                (combined_df_log['unique_date'].isnull()) | (combined_df_log['unique_date'] == 1) | (combined_df_log['unique_date'] == 0)
-            ]
-            
-            if not problematic_rows.empty:
-                st.warning(f"선택한 날짜({selected_date})에 덜 수집된 사이트 리스트는 아래와 같습니다. 직접 접속 후 확인 필요합니다.")
-                
-                # Replace the "URL" column with "확인하기" buttons
-                problematic_rows = problematic_rows.copy()
-                problematic_rows['URL'] = problematic_rows['URL'].apply(
-                    lambda x: f'<a href="{html.escape(x)}" target="_blank"><button>확인하기</button></a>' if pd.notna(x) else ''
-                    )
-  
-                # Render the DataFrame as HTML
-                st.markdown(problematic_rows.to_html(escape=False, index=False), unsafe_allow_html=True)
-            
+        st.success("✅ 데이터 로딩 및 벡터 구축 완료")
+
+        # ------------------------
+        # 모델 입력 UI
+        # ------------------------
+        st.subheader("2. 모델명을 입력하면 유사 경쟁 모델을 추천합니다")
+        model_list = agent.df['ORIG_MODEL'].unique().tolist()
+        selected_model = st.selectbox("기준 모델을 선택하세요", options=model_list)
+        top_n = st.slider("추천 개수", 1, 10, 5)
+
+        if st.button("🔍 유사 경쟁 모델 찾기"):
+            similar_models, explanation = agent.explain_recommendation(selected_model, top_n=top_n)
+
+            if isinstance(similar_models, str):
+                st.warning(similar_models)
             else:
-                st.success(f"선택한 날짜({selected_date})에는 unique_date가 Null이거나 1인 데이터가 없습니다.")
-        else:
-            st.write(f"선택한 날짜({selected_date})에 해당하는 df_log 파일을 찾을 수 없습니다.")
-    else:
-        st.write("최근 15일 내에 df_log 파일을 찾을 수 없습니다.")
-    
-    # df_list 파일 읽기 및 처리
-    df_list_file_paths = get_recent_files('df_list')
-    if df_list_file_paths:
-        combined_df_list = pd.DataFrame()
-        
-        for file_path in df_list_file_paths:
-            try:
-                df = pd.read_excel(file_path, engine='openpyxl')
-                st.write(f"{file_path}에서 데이터 로드 성공")
-                combined_df_list = pd.concat([combined_df_list, df], ignore_index=True)
-            except Exception as e:
-                st.error(f"{file_path}에서 데이터를 읽는 중 오류 발생: {e}")
+                st.write("### 🔁 유사 경쟁 모델 리스트")
+                st.dataframe(similar_models, use_container_width=True)
+                
+                if explanation:
+                    st.markdown("### 🧠 추천 이유 (AI 요약)")
+                    st.info(explanation)
 
-        if combined_df_list.empty:
-            st.error("모든 파일에서 데이터를 불러오지 못했습니다. 파일 내용을 확인하세요.")
-            return
-        
-        # 필요한 열 확인
-        required_columns = ['SITE_NO', '출처', '제목', '작성일', '수집일']
-        missing_columns = [col for col in required_columns if col not in combined_df_list.columns]
-        if missing_columns:
-            st.error(f"데이터에 누락된 열이 있습니다: {missing_columns}")
-            return
+        # ------------------------
+        # 추가 기능
+        # ------------------------
+        st.subheader("3. 🔧 추가 기능")
+        with st.expander("📊 전체 모델 분포 보기"):
+            st.bar_chart(df_raw['ORIG_MODEL'].value_counts())
 
-        # 데이터 처리
-        combined_df_list = combined_df_list.dropna(subset=['작성일', '수집일'])
-  
-        combined_df_list['작성일'] = pd.to_datetime(combined_df_list['작성일'], errors='coerce')
-        # '수집일' 컬럼 포맷 변경
-        combined_df_list['수집일'] = pd.to_datetime(combined_df_list['수집일'], errors='coerce')
-        combined_df_list['수집일'] = combined_df_list['수집일'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        with st.expander("📥 데이터 미리보기"):
+            st.dataframe(df_raw.head(), use_container_width=True)
 
-        # 중복 제거: 동일한 ('SITE_NO', '출처', '제목', 'URL', '작성일') 조합에서 '수집일'이 가장 작은 행만 남김
-        combined_df_list = combined_df_list.loc[
-            combined_df_list.groupby(['SITE_NO', '출처', '제목', '작성일'])['수집일'].idxmin()
-            ]
-        
-        # 데이터 정렬: '수집일' 내림차순, '작성일' 내림차순, 'SITE_NO' 오름차순, '제목' 오름차순
-        combined_df_list = combined_df_list.sort_values(
-            by=['수집일', '작성일', 'SITE_NO', '제목'],
-            ascending=[False, False, True, True]
-        )
+    except Exception as e:
+        st.error(f"❌ 오류 발생: {e}")
 
-        # 컬럼 순서 재정렬
-        column_order = ['SITE_NO', '출처', '제목', 'URL', '작성일', '수집일']
-        combined_df_list = combined_df_list.reindex(columns=column_order)
-
-                # General CSS styling for the top table
-        st.markdown("""
-            <style>
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                th {
-                    text-align: center;  /* Center-align the headers */
-                    background-color: #f2f2f2;  /* Light gray background for headers */
-                    padding: 8px;
-                }
-                td {
-                    padding: 8px;
-                    text-align: left;  /* Align text to the left in table cells */
-                    max-width: 200px;  /* Adjust max-width to better fit content */
-                    word-wrap: break-word;  /* Enable word wrap for long text */
-                }
-                a {
-                    color: #0066cc;  /* Link color */
-                    text-decoration: none;  /* Remove underline from links */
-                }
-                a:hover {
-                    text-decoration: underline;  /* Underline on hover */
-                }
-                button {
-                    font-size: 12px;
-                    padding: 5px 10px;
-                }
-                .lower-table td:nth-child(1) {
-                    max-width: 50px;  /* Reduce the width of the 2nd column */
-                }                
-                .lower-table td:nth-child(2) {
-                    max-width: 100px;  /* Reduce the width of the 2nd column */
-                }
-                .lower-table td:nth-child(3) {
-                    max-width: 300px;  /* Increase the width of the 3rd column */
-                }
-                .lower-table td:nth-child(4) {
-                    max-width: 50px;  /* Increase the width of the 3rd column */
-                }
-                .lower-table td:nth-child(5) {
-                    max-width: 50px;  /* Increase the width of the 3rd column */
-                }
-            </style>
-        """, unsafe_allow_html=True)
-    
-
-        st.write(f"최근 15일 내에 수집된 공고 파일 {len(df_list_file_paths)}개를 불러왔습니다.")
-        st.write("포함 키워드 : 특허, 제안, 심의, 공법")
-
-        # 엑셀 파일 다운로드 버튼 추가
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            combined_df_list.to_excel(writer, index=False, sheet_name='df_list_data')
-            writer.close()  # save() 대신 close()를 사용합니다.
-            processed_data = output.getvalue()
-        st.download_button(
-            label="📥 공고 파일 엑셀 다운로드",
-            data=processed_data,
-            file_name=f"recent_df_list_{today_str}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        
-        search_keyword = st.text_input("수집된 공고 제목에서 검색할 키워드를 입력하세요")
-    
-        if search_keyword:
-            search_results = combined_df_list[combined_df_list['제목'].str.contains(search_keyword, na=False)]
-            st.write(f"'{search_keyword}' 검색 결과:")
-            search_results = search_results.copy()
-            search_results['URL'] = search_results['URL'].apply(
-                lambda x: create_link_button(x) if pd.notna(x) else ''
-            )
-            st.markdown(f'<div class="lower-table">{search_results.to_html(escape=False, index=False)}</div>', unsafe_allow_html=True)
-        else:
-            st.write("df_list 파일의 전체 데이터:")
-            # Replace the "URL" column with "확인하기" buttons
-            combined_df_list = combined_df_list.copy()
-            combined_df_list['URL'] = combined_df_list['URL'].apply(
-                lambda x: create_link_button(x) if pd.notna(x) else ''
-            )
-            
-            # Render the DataFrame as HTML
-            st.markdown(f'<div class="lower-table">{combined_df_list.to_html(escape=False, index=False)}</div>', unsafe_allow_html=True)
-      
-
-    else:
-        st.write("최근 15일 내에 df_list 파일을 찾을 수 없습니다.")
-    
-
-
-# 메인 실행 흐름
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    login()
 else:
-    main_app()
+    st.info("⬆️ 먼저 OpenAI 인증 정보와 데이터를 업로드하세요")
