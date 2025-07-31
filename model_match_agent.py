@@ -112,7 +112,7 @@ class ModelMatchAgentAzure:
             return f"[안내] '{base_brand}' 브랜드 외 유사 모델이 없습니다."
 
         results = self.df.iloc[filtered_indices][[
-            'ORIG_MODEL', 'Model', 'BRAND_AD_HOC', 'MAIN_TYPE',
+            'Model', 'BRAND_AD_HOC', 'MAIN_TYPE',
             '35_Color', '38_Energy', '44_Capacity', '55_Standard/Countertop(D)'
         ]].copy()
         results['distance'] = filtered_distances
