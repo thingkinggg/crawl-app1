@@ -29,7 +29,7 @@ def draw_price_trend_chart(chart_df):
 
 
 def summarize_price_trend(chart_df, selected_model, similar_models_df, llm):
-    sample = chart_df.groupby(['Model', 'yyyymm'])['unit'].mean().reset_index()
+    sample = chart_df.groupby(['Model', 'yyyymm'])['UNIT'].mean().reset_index()
     pivot = sample.pivot(index='yyyymm', columns='Model', values='UNIT').fillna('')
     trend_text = pivot.to_string()
 
