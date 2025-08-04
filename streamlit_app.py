@@ -1,76 +1,71 @@
 import streamlit as st
 import pandas as pd
-from model_match_agent import ModelMatchAgentAzure  # 별도 모듈로 분리된 클래스
-import os
+from model_match_agent import ModelMatchAgentAzure
+import altair as alt
 
-# ------------------------
-# Streamlit UI Layout
-# ------------------------
-st.set_page_config(page_title="Model Match AI Agent", layout="wide")
-st.title("🔍 경쟁 모델 추천 에이전트")
-st.markdown("고객이 업로드한 매출 데이터 기반으로 유사한 **경쟁 브랜드 모델**을 추천하고, AI가 추천 이유를 요약해줍니다.")
+# Azure OpenAI 설정
+AZURE_OPENAI_KEY = st.secrets["AZURE_OPENAI_KEY"]
+AZURE_ENDPOINT = st.secrets["AZURE_ENDPOINT"]
+DEPLOYMENT_NAME = st.secrets["DEPLOYMENT_NAME"]
 
-# ------------------------
-# Sidebar Inputs
-# ------------------------
-st.sidebar.header("🧾 설정")
-openai_key = st.sidebar.text_input("Azure OpenAI Key", type="password")
-endpoint = st.sidebar.text_input("Azure OpenAI Endpoint", value="https://<your-resource>.openai.azure.com/")
-deployment_name = st.sidebar.text_input("Deployment Name", value="gpt-4o")
+st.title("🧠 경쟁 모델 매칭 AI Agent")
+st.markdown("""
+- 매출 데이터(.xlsx)를 업로드하면,
+- 특정 모델명을 기준으로 **경쟁 브랜드 유사 모델**을 추천하고,
+- **추천 이유 + 가격 변화 추이**를 시각화합니다.
+""")
 
-# ------------------------
-# File Upload
-# ------------------------
-st.subheader("1. 매출 데이터 업로드")
-uploaded_file = st.file_uploader("엑셀 파일(.xlsx) 업로드", type=["xlsx"])
+# 파일 업로드
+uploaded_file = st.file_uploader("📁 매출 데이터 (.xlsx) 업로드", type=["xlsx"])
 
-if uploaded_file and openai_key:
-    try:
-        df_raw = pd.read_excel(uploaded_file)
+if uploaded_file:
+    df_raw = pd.read_excel(uploaded_file)
+    st.success(f"✅ 데이터 업로드 완료! 총 {len(df_raw)}행")
 
-        # 모델 초기화
-        agent = ModelMatchAgentAzure(
-            df_raw=df_raw,
-            openai_api_key=openai_key,
-            endpoint=endpoint,
-            deployment_name=deployment_name
-        )
+    model_name = st.selectbox("🔍 기준 모델 (ORIG_MODEL)", sorted(df_raw['ORIG_MODEL'].unique()))
 
-        st.success("✅ 데이터 로딩 및 벡터 구축 완료")
+    if st.button("🔎 유사 경쟁 모델 찾기"):
+        with st.spinner("모델 분석 중..."):
+            try:
+                agent = ModelMatchAgentAzure(
+                    df_raw=df_raw,
+                    openai_api_key=AZURE_OPENAI_KEY,
+                    endpoint=AZURE_ENDPOINT,
+                    deployment_name=DEPLOYMENT_NAME
+                )
+                similar_models, explanation = agent.explain_recommendation(model_name)
 
-        # ------------------------
-        # 모델 입력 UI
-        # ------------------------
-        st.subheader("2. 모델명을 입력하면 유사 경쟁 모델을 추천합니다")
-        model_list = agent.df['ORIG_MODEL'].unique().tolist()
-        selected_model = st.selectbox("기준 모델을 선택하세요", options=model_list)
-        top_n = st.slider("추천 개수", 1, 10, 5)
+                if isinstance(similar_models, str):
+                    st.warning(similar_models)
+                else:
+                    st.subheader("📋 유사 경쟁 모델 추천 결과")
+                    st.dataframe(similar_models)
 
-        if st.button("🔍 유사 경쟁 모델 찾기"):
-            similar_models, explanation = agent.explain_recommendation(selected_model, top_n=top_n)
+                    st.subheader("💡 추천 이유 (LLM 기반 요약)")
+                    st.write(explanation)
 
-            if isinstance(similar_models, str):
-                st.warning(similar_models)
-            else:
-                st.write("### 🔁 유사 경쟁 모델 리스트")
-                st.dataframe(similar_models, use_container_width=True)
-                
-                if explanation:
-                    st.markdown("### 🧠 추천 이유 (AI 요약)")
-                    st.info(explanation)
+                    st.subheader("📈 경쟁 모델의 월별 가격 변화 추이")
+                    chart = create_price_trend_chart(df_raw, model_name, similar_models)
+                    st.altair_chart(chart, use_container_width=True)
 
-        # ------------------------
-        # 추가 기능
-        # ------------------------
-        st.subheader("3. 🔧 추가 기능")
-        with st.expander("📊 전체 모델 분포 보기"):
-            st.bar_chart(df_raw['ORIG_MODEL'].value_counts())
+            except Exception as e:
+                st.error(f"[오류] 모델 분석 중 문제가 발생했습니다: {e}")
 
-        with st.expander("📥 데이터 미리보기"):
-            st.dataframe(df_raw.head(), use_container_width=True)
 
-    except Exception as e:
-        st.error(f"❌ 오류 발생: {e}")
+def create_price_trend_chart(df_raw, selected_model, similar_models_df):
+    model_list = similar_models_df['ORIG_MODEL'].tolist() + [selected_model]
+    chart_df = df_raw[df_raw['ORIG_MODEL'].isin(model_list)].copy()
 
-else:
-    st.info("⬆️ 먼저 OpenAI 인증 정보와 데이터를 업로드하세요")
+    # 기준 브랜드 제외
+    base_brand = chart_df[chart_df['ORIG_MODEL'] == selected_model]['BRAND_AD_HOC'].mode().iloc[0]
+    chart_df = chart_df[chart_df['BRAND_AD_HOC'] != base_brand]
+
+    chart_df = chart_df[['ORIG_MODEL', 'BRAND_AD_HOC', 'yyyymm', 'unit']].dropna()
+    chart_df['yyyymm'] = chart_df['yyyymm'].astype(str)
+
+    return alt.Chart(chart_df).mark_line(point=True).encode(
+        x=alt.X('yyyymm:O', title='월'),
+        y=alt.Y('unit:Q', title='단가 (unit)'),
+        color='ORIG_MODEL:N',
+        tooltip=['ORIG_MODEL', 'BRAND_AD_HOC', 'unit', 'yyyymm']
+    ).properties(width=700, height=400)
