@@ -11,14 +11,14 @@ def create_price_trend_chart(df_raw, selected_model, similar_models_df):
     base_brand = chart_df[chart_df['Model'] == selected_model]['BRAND_AD_HOC'].mode().iloc[0]
     chart_df = chart_df[chart_df['BRAND_AD_HOC'] != base_brand]
 
-    chart_df = chart_df[['Model', 'BRAND_AD_HOC', 'yyyymm', 'unit']].dropna()
+    chart_df = chart_df[['Model', 'BRAND_AD_HOC', 'yyyymm', 'UNIT']].dropna()
     chart_df['yyyymm'] = chart_df['yyyymm'].astype(str)
 
     return alt.Chart(chart_df).mark_line(point=True).encode(
         x=alt.X('yyyymm:O', title='월'),
-        y=alt.Y('unit:Q', title='단가 (unit)'),
+        y=alt.Y('UNIT:Q', title='단가 (unit)'),
         color='Model:N',
-        tooltip=['Model', 'BRAND_AD_HOC', 'unit', 'yyyymm']
+        tooltip=['Model', 'BRAND_AD_HOC', 'UNIT', 'yyyymm']
     ).properties(width=700, height=400)
 
 
