@@ -7,13 +7,13 @@ from langchain.chains import LLMChain
 from langchain_openai import AzureChatOpenAI
 
 def prepare_price_trend_df(df_raw, selected_model, similar_models_df):
-    model_list = similar_models_df['orig_model'].tolist() + [selected_model]
-    chart_df = df_raw[df_raw['orig_model'].isin(model_list)].copy()
+    model_list = similar_models_df['Model'].tolist() + [selected_model]
+    chart_df = df_raw[df_raw['Model'].isin(model_list)].copy()
 
-    base_brand = chart_df[chart_df['orig_model'] == selected_model]['brand_ad_hoc'].mode().iloc[0]
-    chart_df = chart_df[chart_df['brand_ad_hoc'] != base_brand]
+    base_brand = chart_df[chart_df['Model'] == selected_model]['BRAND_AD_HOC'].mode().iloc[0]
+    chart_df = chart_df[chart_df['BRAND_AD_HOC'] != base_brand]
 
-    chart_df = chart_df[['orig_model', 'brand_ad_hoc', 'yyyymm', 'unit']].dropna()
+    chart_df = chart_df[['Model', 'BRAND_AD_HOC', 'yyyymm', 'UNIT']].dropna()
     chart_df['yyyymm'] = chart_df['yyyymm'].astype(str)
 
     return chart_df
@@ -22,18 +22,18 @@ def prepare_price_trend_df(df_raw, selected_model, similar_models_df):
 def draw_price_trend_chart(chart_df):
     return alt.Chart(chart_df).mark_line(point=True).encode(
         x=alt.X('yyyymm:O', title='월'),
-        y=alt.Y('unit:Q', title='단가'),
-        color='orig_model:N',
-        tooltip=['orig_model', 'unit', 'yyyymm']
+        y=alt.Y('UNIT:Q', title='단가'),
+        color='Model:N',
+        tooltip=['Model', 'UNIT', 'yyyymm']
     ).properties(width=700, height=400)
 
 
 def summarize_price_trend(chart_df, selected_model, similar_models_df, llm):
-    sample = chart_df.groupby(['orig_model', 'yyyymm'])['unit'].mean().reset_index()
-    pivot = sample.pivot(index='yyyymm', columns='orig_model', values='unit').fillna('')
+    sample = chart_df.groupby(['Model', 'yyyymm'])['unit'].mean().reset_index()
+    pivot = sample.pivot(index='yyyymm', columns='Model', values='UNIT').fillna('')
     trend_text = pivot.to_string()
 
-    model_names = ", ".join(similar_models_df['orig_model'].tolist())
+    model_names = ", ".join(similar_models_df['Model'].tolist())
     prompt = PromptTemplate.from_template(
         """
         기준 모델: {base_model}
