@@ -4,21 +4,21 @@ from model_match_agent import ModelMatchAgentAzure
 import altair as alt
 
 def create_price_trend_chart(df_raw, selected_model, similar_models_df):
-    model_list = similar_models_df['ORIG_MODEL'].tolist() + [selected_model]
-    chart_df = df_raw[df_raw['ORIG_MODEL'].isin(model_list)].copy()
+    model_list = similar_models_df['Model'].tolist() + [selected_model]
+    chart_df = df_raw[df_raw['Model'].isin(model_list)].copy()
 
     # 기준 브랜드 제외
-    base_brand = chart_df[chart_df['ORIG_MODEL'] == selected_model]['BRAND_AD_HOC'].mode().iloc[0]
+    base_brand = chart_df[chart_df['Model'] == selected_model]['BRAND_AD_HOC'].mode().iloc[0]
     chart_df = chart_df[chart_df['BRAND_AD_HOC'] != base_brand]
 
-    chart_df = chart_df[['ORIG_MODEL', 'BRAND_AD_HOC', 'yyyymm', 'unit']].dropna()
+    chart_df = chart_df[['Model', 'BRAND_AD_HOC', 'yyyymm', 'unit']].dropna()
     chart_df['yyyymm'] = chart_df['yyyymm'].astype(str)
 
     return alt.Chart(chart_df).mark_line(point=True).encode(
         x=alt.X('yyyymm:O', title='월'),
         y=alt.Y('unit:Q', title='단가 (unit)'),
-        color='ORIG_MODEL:N',
-        tooltip=['ORIG_MODEL', 'BRAND_AD_HOC', 'unit', 'yyyymm']
+        color='Model:N',
+        tooltip=['Model', 'BRAND_AD_HOC', 'unit', 'yyyymm']
     ).properties(width=700, height=400)
 
 
