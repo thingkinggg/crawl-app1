@@ -12,4 +12,3 @@ ffmpeg
 plotly
 kaleido
 pillow
-plotly_get_chrome
