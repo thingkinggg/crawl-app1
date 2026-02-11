@@ -1,11 +1,12 @@
 streamlit
-openpyxl
-streamlit-authenticator
-streamlit-javascript
-xlsxwriter
 pandas
+numpy
+matplotlib
 scikit-learn
-faiss-cpu
 langchain
 langchain-openai
 openai
+bar_chart_race 
+openpyxl
+ffmpeg
+plotly
