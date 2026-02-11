@@ -10,3 +10,5 @@ bar_chart_race
 openpyxl
 ffmpeg
 plotly
+kaleido
+pillow
